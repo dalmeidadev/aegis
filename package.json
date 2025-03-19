@@ -27,7 +27,11 @@
     "lint": "biome lint ./src",
     "format": "biome format --write ./src",
     "check": "biome check ./src",
-    "check:apply": "biome check --apply ./src"
+    "check:write": "biome check --write ./src",
+    "pack:clean": "rm -f aegis-*.tgz",
+    "pack:build": "bun run build:clean && bun run build",
+    "pack:create": "npm pack",
+    "pack": "bun run pack:clean && bun run pack:build && bun run pack:create"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
