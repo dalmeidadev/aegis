@@ -70,8 +70,8 @@ export function createSWRErrorHandler(options: SWRErrorHandlerOptions) {
    * @param error - The error that occurred.
    * @param key - The SWR query key.
    */
-  return (error: unknown, key: string) => {
-    const result = errorHandler.handle(error);
+  return async (error: unknown, key: string) => {
+    const result = await errorHandler.handle(error);
 
     // Prepare the key for logging
     const fullKey = keyPrefix ? `${keyPrefix}.${key}` : key;

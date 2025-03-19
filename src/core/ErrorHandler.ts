@@ -175,7 +175,7 @@ export class ErrorHandler {
    * }
    * ```
    */
-  public handle(error: unknown): ErrorResult {
+  public async handle(error: unknown): Promise<ErrorResult> {
     // Determine the error type
     const errorVerb = this.getErrorVerb(error);
 
@@ -186,7 +186,7 @@ export class ErrorHandler {
     const duration = this.calculateMessageDuration(config.message);
 
     // Log the error if needed
-    this.logErrorIfNeeded(errorVerb, config, error);
+    await this.logErrorIfNeeded(errorVerb, config, error);
 
     // Execute the associated action if it exists
     if (config.action) {
@@ -226,11 +226,11 @@ export class ErrorHandler {
    * @param config - The error configuration.
    * @param error - The original error.
    */
-  private logErrorIfNeeded(
+  private async logErrorIfNeeded(
     errorVerb: ErrorVerb,
     config: ErrorConfig,
     error: unknown
-  ): void {
+  ): Promise<void> {
     // Determine if this error should be logged
     const shouldLog = this.logAllErrors || this.shouldLogError(config.severity || 'error');
 
@@ -247,7 +247,8 @@ export class ErrorHandler {
     // Look for adapter that can extract additional metadata
     for (const adapter of this.adapters) {
       if (adapter.canHandle(error) && adapter.extractMetadata) {
-        Object.assign(metadata, adapter.extractMetadata(error));
+        const adapterMetadata = await Promise.resolve(adapter.extractMetadata(error));
+        Object.assign(metadata, adapterMetadata);
         break;
       }
     }
@@ -319,9 +320,9 @@ export class ErrorHandler {
   public createQueryErrorHandler(
     queryName: string,
     onError?: (error: unknown, result: ErrorResult) => void
-  ): (error: unknown) => void {
-    return (error: unknown) => {
-      const result = this.handle(error);
+  ): (error: unknown) => Promise<void> {
+    return async (error: unknown) => {
+      const result = await this.handle(error);
 
       // Log error with additional context
       this.logger(

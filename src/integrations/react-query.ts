@@ -81,8 +81,8 @@ export function createReactQueryErrorHandler(options: ReactQueryErrorHandlerOpti
     createErrorHandler: (queryName: string) => {
       const fullQueryName = queryNamePrefix ? `${queryNamePrefix}.${queryName}` : queryName;
 
-      return (error: unknown) => {
-        const result = errorHandler.handle(error);
+      return async (error: unknown) => {
+        const result = await errorHandler.handle(error);
 
         // Show toast if configured
         if (showToast) {
@@ -105,11 +105,11 @@ export function createReactQueryErrorHandler(options: ReactQueryErrorHandlerOpti
      * @param error - The error that occurred.
      * @returns True if the query should be retried.
      */
-    shouldRetry: (failureCount: number, error: unknown) => {
+    shouldRetry: async (failureCount: number, error: unknown) => {
       // Don't retry after a certain number of attempts
       if (failureCount >= 3) return false;
 
-      const result = errorHandler.handle(error);
+      const result = await errorHandler.handle(error);
 
       // Retry only certain types of errors
       const retryableErrors: string[] = [

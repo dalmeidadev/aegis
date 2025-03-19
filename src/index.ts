@@ -97,13 +97,13 @@ export function createErrorHandler(
  * }
  * ```
  */
-export function handleError(
+export async function handleError(
   error: unknown,
   customConfigs?: ErrorConfigMap,
-  callback?: (result: ReturnType<ErrorHandler['handle']>) => void
+  callback?: (result: Awaited<ReturnType<ErrorHandler['handle']>>) => void
 ) {
   const errorHandler = createErrorHandler(undefined, customConfigs);
-  const result = errorHandler.handle(error);
+  const result = await errorHandler.handle(error);
 
   if (callback) {
     callback(result);

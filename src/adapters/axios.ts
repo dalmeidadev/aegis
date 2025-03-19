@@ -10,7 +10,7 @@ import { VERB_TO_STATUS_CODE } from '../core/constants';
 /**
  * Adapter to handle Axios errors.
  */
-export const axiosAdapter: ErrorAdapter<AxiosError> = {
+export const axiosAdapter: ErrorAdapter = {
   name: 'AxiosAdapter',
 
   /**
@@ -27,19 +27,20 @@ export const axiosAdapter: ErrorAdapter<AxiosError> = {
    * @param error - The Axios error.
    * @returns The corresponding error verb.
    */
-  getErrorVerb: (error: AxiosError): ErrorVerb => {
+  getErrorVerb: (error: unknown): ErrorVerb => {
+    const axiosError = error as AxiosError;
     // Handle cancelled requests
-    if (error.code === 'ECONNABORTED' || error.code === 'ERR_CANCELED') {
+    if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ERR_CANCELED') {
       return 'cancelled';
     }
 
     // Handle network errors
-    if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+    if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ERR_NETWORK') {
       return 'network-error';
     }
 
     // Get the HTTP status code
-    const status = error.response?.status;
+    const status = axiosError.response?.status;
 
     // If there's no status code, it's probably a network error
     if (!status) {
@@ -67,15 +68,16 @@ export const axiosAdapter: ErrorAdapter<AxiosError> = {
    * @param error - The Axios error.
    * @returns Metadata extracted from the error.
    */
-  extractMetadata: (error: AxiosError): Record<string, unknown> => {
+  extractMetadata: (error: unknown): Record<string, unknown> => {
+    const axiosError = error as AxiosError;
     return {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      headers: error.config?.headers,
-      data: error.response?.data,
-      code: error.code
+      url: axiosError.config?.url,
+      method: axiosError.config?.method,
+      status: axiosError.response?.status,
+      statusText: axiosError.response?.statusText,
+      headers: axiosError.config?.headers,
+      data: axiosError.response?.data,
+      code: axiosError.code
     };
   }
 };

@@ -19,7 +19,7 @@ export interface FetchError extends Error {
 /**
  * Adapter to handle Fetch API errors.
  */
-export const fetchAdapter: ErrorAdapter<FetchError | Response> = {
+export const fetchAdapter: ErrorAdapter = {
   name: 'FetchAdapter',
 
   /**
@@ -50,26 +50,27 @@ export const fetchAdapter: ErrorAdapter<FetchError | Response> = {
    * @param error - The Fetch error.
    * @returns The corresponding error verb.
    */
-  getErrorVerb: (error: FetchError | Response): ErrorVerb => {
+  getErrorVerb: (error: unknown): ErrorVerb => {
+    const err = error as FetchError | Response;
     // Handle request abort
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (err instanceof Error && err.name === 'AbortError') {
       return 'cancelled';
     }
 
     // Determine the status code
     let status: number | undefined;
 
-    if (error instanceof Response) {
-      status = error.status;
-    } else if ('status' in error && typeof error.status === 'number') {
-      status = error.status;
+    if (err instanceof Response) {
+      status = err.status;
+    } else if (err && 'status' in err && typeof err.status === 'number') {
+      status = err.status;
     }
 
     // Handle network errors
-    if (error instanceof Error &&
-      (error.message.includes('network') ||
-        error.message.includes('connection') ||
-        error.message.includes('offline'))) {
+    if (err instanceof Error &&
+      (err.message.includes('network') ||
+        err.message.includes('connection') ||
+        err.message.includes('offline'))) {
       return 'network-error';
     }
 
@@ -99,16 +100,18 @@ export const fetchAdapter: ErrorAdapter<FetchError | Response> = {
    * @param error - The Fetch error.
    * @returns Metadata extracted from the error.
    */
-  extractMetadata: async (error: FetchError | Response): Promise<Record<string, unknown>> => {
-    if (error instanceof Response) {
+  extractMetadata: async (error: unknown): Promise<Record<string, unknown>> => {
+    const err = error as FetchError | Response;
+
+    if (err instanceof Response) {
       let responseData;
       try {
         // Try to read the response body as JSON
-        responseData = await error.clone().json();
+        responseData = await err.clone().json();
       } catch {
         try {
           // If it's not JSON, try to read as text
-          responseData = await error.clone().text();
+          responseData = await err.clone().text();
         } catch {
           // If we can't read the body, leave it empty
           responseData = null;
@@ -116,20 +119,28 @@ export const fetchAdapter: ErrorAdapter<FetchError | Response> = {
       }
 
       return {
-        url: error.url,
-        status: error.status,
-        statusText: error.statusText,
+        url: err.url,
+        status: err.status,
+        statusText: err.statusText,
         responseData,
-        headers: Object.fromEntries(error.headers.entries())
+        headers: Object.fromEntries(err.headers.entries())
       };
     }
 
+    // For FetchError
+    if (err && err instanceof Error) {
+      return {
+        message: err.message,
+        status: 'status' in err ? err.status : undefined,
+        statusText: 'statusText' in err ? err.statusText : undefined,
+        url: 'url' in err ? err.url : undefined,
+        responseData: 'responseData' in err ? err.responseData : undefined
+      };
+    }
+
+    // Fallback
     return {
-      message: error.message,
-      status: error.status,
-      statusText: error.statusText,
-      url: error.url,
-      responseData: error.responseData
+      error: err
     };
   }
 };
