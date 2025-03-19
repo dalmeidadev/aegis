@@ -20,6 +20,22 @@ export type ErrorVerb =
   | 'cancelled'
   | 'unknown';
 
+// Create an array of all ErrorVerbs for iteration
+export const ERROR_VERBS: ErrorVerb[] = [
+  'not-found',
+  'unauthorized',
+  'forbidden',
+  'bad-request',
+  'server-error',
+  'network-error',
+  'timeout',
+  'conflict',
+  'too-many-requests',
+  'unprocessable-entity',
+  'cancelled',
+  'unknown'
+];
+
 /**
  * Defines the structure for error configuration.
  */
@@ -81,13 +97,13 @@ export interface ErrorResult {
  * Interface for error adapters that convert library/framework specific errors
  * to our error handling system.
  */
-export interface ErrorAdapter<T = unknown> {
+export interface ErrorAdapter {
   /** Adapter name for easy identification. */
   name: string;
   /** Checks if this adapter can handle the given error. */
   canHandle: (error: unknown) => boolean;
   /** Extracts information from the error to determine the ErrorVerb. */
-  getErrorVerb: (error: T) => ErrorVerb;
+  getErrorVerb: (error: unknown) => ErrorVerb;
   /** Extracts additional metadata from the error that may be useful. */
-  extractMetadata?: (error: T) => Record<string, unknown> | Promise<Record<string, unknown>>;
+  extractMetadata?: (error: unknown) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }

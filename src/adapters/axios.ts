@@ -19,7 +19,12 @@ export const axiosAdapter: ErrorAdapter = {
    * @returns True if the error is an AxiosError.
    */
   canHandle: (error: unknown): boolean => {
-    return error instanceof AxiosError;
+    return Boolean(
+      error &&
+      typeof error === 'object' &&
+      'isAxiosError' in error &&
+      (error as any).isAxiosError === true
+    );
   },
 
   /**

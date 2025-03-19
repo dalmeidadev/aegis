@@ -3,7 +3,7 @@
  * @description Exports integrations with popular libraries.
  */
 
-export { default as createReactQueryErrorHandler } from './tanstack-query';
+export { default as createReactQueryErrorHandler } from './react-query';
 export { default as createSWRErrorHandler } from './swr';
 
 // For future expansions:

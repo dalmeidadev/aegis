@@ -104,27 +104,34 @@ export const fetchAdapter: ErrorAdapter = {
     const err = error as FetchError | Response;
 
     if (err instanceof Response) {
-      let responseData;
       try {
-        // Try to read the response body as JSON
-        responseData = await err.clone().json();
-      } catch {
+        let responseData;
         try {
-          // If it's not JSON, try to read as text
-          responseData = await err.clone().text();
+          // Try to read the response body as JSON
+          responseData = await err.clone().json();
         } catch {
-          // If we can't read the body, leave it empty
-          responseData = null;
+          try {
+            // If it's not JSON, try to read as text
+            responseData = await err.clone().text();
+          } catch {
+            // If we can't read the body, set as null
+            responseData = null;
+          }
         }
-      }
 
-      return {
-        url: err.url,
-        status: err.status,
-        statusText: err.statusText,
-        responseData,
-        headers: Object.fromEntries(err.headers.entries())
-      };
+        return {
+          url: err.url,
+          status: err.status,
+          statusText: err.statusText,
+          responseData,
+          headers: Object.fromEntries(err.headers.entries())
+        };
+      } catch (readError) {
+        // If there's an error processing the response, return at least the error object
+        return {
+          error: err
+        };
+      }
     }
 
     // For FetchError
@@ -138,7 +145,7 @@ export const fetchAdapter: ErrorAdapter = {
       };
     }
 
-    // Fallback
+    // Fallback for unknown error types
     return {
       error: err
     };

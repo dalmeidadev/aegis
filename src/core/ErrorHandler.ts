@@ -69,10 +69,17 @@ export class ErrorHandler {
    */
   constructor(options: ErrorHandlerOptions = {}) {
     // Configure default error handling
-    this.defaultConfig = options.defaultConfig || DEFAULT_ERROR_CONFIGS['unknown'];
+    // Important: Set defaultConfig before initializing errorConfigs
+    this.defaultConfig = options.defaultConfig
+      ? { ...options.defaultConfig }
+      : { ...DEFAULT_ERROR_CONFIGS['unknown'] };
 
     // Initialize error configurations with default values
     this.errorConfigs = { ...DEFAULT_ERROR_CONFIGS };
+
+    // Override the unknown error configuration with the default config 
+    // This is the critical part that was missing
+    this.errorConfigs['unknown'] = { ...this.defaultConfig };
 
     // Apply custom configurations
     if (options.configs) {
@@ -153,6 +160,7 @@ export class ErrorHandler {
    */
   public setDefaultConfig(config: ErrorConfig): ErrorHandler {
     this.defaultConfig = config;
+    this.errorConfigs['unknown'] = { ...config };
     return this;
   }
 
@@ -263,8 +271,11 @@ export class ErrorHandler {
    * @returns True if the error should be logged.
    */
   private shouldLogError(severity: ErrorConfig['severity']): boolean {
+    // If log level is none, never log
     if (this.logLevel === 'none') return false;
-    if (!severity) return true;
+
+    // If no severity provided, use info as default
+    const actualSeverity = severity || 'info';
 
     const severityLevels = {
       'info': 0,
@@ -273,9 +284,10 @@ export class ErrorHandler {
       'critical': 3
     };
 
-    const errorLevel = severityLevels[severity] || 0;
-    const minLevel = severityLevels[this.logLevel || 'error'] || 0;
+    const errorLevel = severityLevels[actualSeverity];
+    const minLevel = severityLevels[this.logLevel || 'error'];
 
+    // Only log if the error severity is >= configured log level
     return errorLevel >= minLevel;
   }
 
