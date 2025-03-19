@@ -18,7 +18,8 @@
   ],
   "scripts": {
     "build": "bun build:js && bun build:types",
-    "build:js": "bun build ./src/index.ts --outdir ./dist --target node --format esm,cjs",
+    "build:clean": "rm -rf dist",
+    "build:js": "bun build ./src/index.ts --outdir ./dist --target node --format esm",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "test": "vitest run",
     "test:watch": "vitest run",

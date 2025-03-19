@@ -3,6 +3,7 @@
  * @description Integration with React Query for error handling.
  */
 
+import { console } from 'inspector';
 import { ErrorHandler } from '../core/ErrorHandler';
 import { ErrorResult } from '../core/types';
 
@@ -81,6 +82,8 @@ export function createReactQueryErrorHandler(options: ReactQueryErrorHandlerOpti
     createErrorHandler: (queryName: string) => {
       const fullQueryName = queryNamePrefix ? `${queryNamePrefix}.${queryName}` : queryName;
 
+      console.error(`[React Query] Error in query [${fullQueryName}]:`);
+
       return async (error: unknown) => {
         const result = await errorHandler.handle(error);
 
@@ -93,7 +96,6 @@ export function createReactQueryErrorHandler(options: ReactQueryErrorHandlerOpti
         if (onError) {
           onError(error, result);
         }
-
         // Return the message for compatibility
         return result.message;
       };
