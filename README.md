@@ -1,6 +1,6 @@
 # Aegis
 
-A professional library for handling errors in frontend applications with support for multiple HTTP libraries and frameworks.
+A simple library for handling errors in frontend applications with support for multiple HTTP libraries and frameworks.
 
 ## Features
 
