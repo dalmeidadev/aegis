@@ -1,6 +1,7 @@
 {
   "name": "@dalmeidadev/aegis",
   "version": "0.1.0",
+  "license": "MIT",
   "private": false,
   "module": "src/index.ts",
   "type": "module",
